@@ -8,13 +8,13 @@ namespace UI
     public class PauseModeController : MonoBehaviour
     {
         [SerializeField] private GameObject pauseMenu;
+        [SerializeField] private GameObject firstSelectedButton;
+
         private bool _isPaused = false;
-        
-        void Update()
+
+        private void Update()
         {
-            bool isEscape = Keyboard.current.escapeKey.wasPressedThisFrame;
-            
-            if (isEscape)
+            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
                 TogglePause();
         }
 
@@ -23,25 +23,52 @@ namespace UI
             ClosePauseMenu();
         }
 
-        private void TogglePause()
+        public void TogglePause()
         {
-            _isPaused = !_isPaused;
-            
-            pauseMenu.SetActive(_isPaused);
-            Time.timeScale = _isPaused ? 0 : 1;
-            Cursor.lockState = _isPaused ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = _isPaused;
+            if (_isPaused)
+                Continue();
+            else
+                Pause();
         }
-        
-        public void ExitMenu()
+
+        private void Pause()
         {
-            SceneManager.LoadScene("MainMenu");
+            _isPaused = true;
+
+            if (pauseMenu != null)
+                pauseMenu.SetActive(true);
+
+            Time.timeScale = 0f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+
+            if (firstSelectedButton != null)
+                UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(firstSelectedButton);
+        }
+
+        public void Continue()
+        {
+            _isPaused = false;
+
+            if (pauseMenu != null)
+                pauseMenu.SetActive(false);
+
+            Time.timeScale = 1f;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
 
         public void ClosePauseMenu()
         {
-            _isPaused = false;
-            pauseMenu.SetActive(false);
+            Continue();
+        }
+
+        public void ExitMenu()
+        {
+            Time.timeScale = 1f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            SceneManager.LoadScene("MainMenu");
         }
     }
 }
